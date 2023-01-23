@@ -14,19 +14,17 @@ export class TicTacToeConsolePlayer{
         const game = new TicTacToe();
 
         while (!game.isGameOver()) {
-            const nextPlayer = game.getCurrPlayer();
             const currState = game.getCurrState();
 
             console.log("\n\n")
-            console.log("Next player:", nextPlayer);
             this.writeState(currState);
 
             const position = await this.readPosition(game);
-            game.makeNextMove(position);
+            game.makeNextMove({squareIndex: position});
         }
 
         console.log("\n\n")
-        console.log("Game result: ", game.getGameProgress());
+        console.log("Game result:", game.getGameResult());
         this.writeState(game.getCurrState());
         readline.close();
     }
@@ -34,7 +32,7 @@ export class TicTacToeConsolePlayer{
     private async readPosition(game: TicTacToe) {
         while (true) {
             const position = parseInt(await this.readline("Enter position: "));
-            const validPositions = game.getAvailableActions().map(action => action.index);
+            const validPositions = game.getAvailableActions().map(action => action.squareIndex);
             if (validPositions.includes(position)) return position;
             console.log("Invalid position");
         }
@@ -49,6 +47,7 @@ export class TicTacToeConsolePlayer{
     }
 
     private writeState(state: TicTacToeState){
+        console.log("Current player:", state.currPlayer);
         const s = (index: number) => state.squares[index] || " ";
         console.log('-------------')
         console.log(`| ${s(0)} | ${s(1)} | ${s(2)} |`)

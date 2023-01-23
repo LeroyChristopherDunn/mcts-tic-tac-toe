@@ -1,79 +1,91 @@
 export class TicTacToe {
 
     private currState: TicTacToeState;
-    private currPlayer: "X" | "O";
 
     constructor(
         initialState: TicTacToeState = INITIAL_STATE,
-        initialPlayer: "X" | "O" = "X",
     ) {
         this.currState = initialState;
-        this.currPlayer = initialPlayer;
     }
 
     getCurrState(): TicTacToeState {
-        return {squares: [...this.currState.squares]};
-    }
-
-    getCurrPlayer() {
-        return this.currPlayer;
+        return {
+            squares: [...this.currState.squares],
+            currPlayer: this.currState.currPlayer,
+        };
     }
 
     getAvailableActions() {
-        return availableActions(this.currState, this.currPlayer);
+        return actions(this.currState);
     }
 
-    makeNextMove(square: number) {
+    makeNextMove(action: TicTacToeAction) {
         if (this.isGameOver()) throw new Error("Game already over");
-        const action = {index: square, value: this.currPlayer};
         this.currState = transition(this.currState, action);
-        this.currPlayer = this.currPlayer === "X" ? "O" : "X";
-    }
-
-    getGameProgress() {
-        return gameProgress(this.currState, this.currPlayer);
     }
 
     isGameOver() {
-        return this.getGameProgress() !== "Ongoing";
+        return gameIsOver(this.currState);
+    }
+
+    getGameResult() {
+        return gameResult(this.currState);
     }
 }
 
-const transition = (state: TicTacToeState, action: TicTacToeAction): TicTacToeState => {
-    const newState = {squares: [...state.squares]};
-    if (!!newState.squares[action.index]) throw new Error(`Square at index {${action.index}} already filled`);
-    if (action.index < 0 || action.index > 8) throw new Error(`Invalid action index {${action.index}}`);
-    newState.squares[action.index] = action.value;
-    return newState;
-}
+type TicTacToePlayer = "X" | "O";
 
 export type TicTacToeState = {
     squares: TicTacToeSquare[];
+    currPlayer: TicTacToePlayer;
 }
 
-type TicTacToeSquare = "X" | "O" | undefined;
+type TicTacToeSquare = TicTacToePlayer | undefined;
 
-type TicTacToeAction = {
-    index: number;
-    value: "X" | "O";
+export type TicTacToeAction = {
+    squareIndex: number;
 }
 
 const INITIAL_STATE: TicTacToeState = {
-    squares: Array(9).fill(undefined)
+    squares: Array(9).fill(undefined),
+    currPlayer: "X",
 }
 
-function availableActions(state: TicTacToeState, currPlayer: "X" | "O"): TicTacToeAction[] {
+const actions = (state: TicTacToeState): TicTacToeAction[] => {
     let emptyIndexes = [];
     for (let index = 0; index < state.squares.length; index++) {
         if (!state.squares[index]) emptyIndexes.push(index);
     }
     return emptyIndexes.map(index => ({
-        index: index,
-        value: currPlayer,
+        squareIndex: index,
     }))
 }
 
-function getWinner(state: TicTacToeState): "X" | "O" | undefined {
+const transition = (state: TicTacToeState, action: TicTacToeAction): TicTacToeState => {
+    const newState: TicTacToeState = {squares: [...state.squares], currPlayer: state.currPlayer};
+    if (!!newState.squares[action.squareIndex]) throw new Error(`Square at index {${action.squareIndex}} already filled`);
+    if (action.squareIndex < 0 || action.squareIndex > 8) throw new Error(`Invalid action index {${action.squareIndex}}`);
+    newState.squares[action.squareIndex] = state.currPlayer;
+    // noinspection UnnecessaryLocalVariableJS
+    const nextPlayer = state.currPlayer === "X" ? "O" : "X";
+    newState.currPlayer = nextPlayer;
+    return newState;
+}
+
+const gameIsOver = (state: TicTacToeState) => gameResult(state) !== "Ongoing";
+
+export type TicTacToeResult = "Ongoing" | "Draw" | TicTacToePlayer;
+
+const gameResult = (state: TicTacToeState): TicTacToeResult => {
+    const winner = getWinner(state);
+    const numAvailableActions = actions(state).length;
+    if (winner) return winner;
+    if (!winner && numAvailableActions > 0) return "Ongoing";
+    if (!winner && numAvailableActions === 0) return "Draw";
+    throw new Error(`Unexpected case for state ${state}`);
+}
+
+const getWinner = (state: TicTacToeState): TicTacToePlayer | undefined => {
     const squares = state.squares;
     const winningSequences = [
         // 3 in a row
@@ -101,8 +113,10 @@ function getWinner(state: TicTacToeState): "X" | "O" | undefined {
     return undefined;
 }
 
-function gameProgress(state: TicTacToeState, player: "X" | "O"): "Ongoing" | "Draw" | "X" | "O" {
-    if (!getWinner(state)) return "Ongoing";
-    if (availableActions(state, player).length === 0) return "Draw";
-    return getWinner(state);
+export const TicTacToeModel = {
+    initialState: INITIAL_STATE,
+    actions: actions,
+    transition: transition,
+    gameIsOver: gameIsOver,
+    gameResult: gameResult,
 }
