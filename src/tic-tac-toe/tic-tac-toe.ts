@@ -52,6 +52,7 @@ const INITIAL_STATE: TicTacToeState = {
 }
 
 const actions = (state: TicTacToeState): TicTacToeAction[] => {
+    if (getWinner(state)) return [];
     let emptyIndexes = [];
     for (let index = 0; index < state.squares.length; index++) {
         if (!state.squares[index]) emptyIndexes.push(index);
@@ -62,6 +63,7 @@ const actions = (state: TicTacToeState): TicTacToeAction[] => {
 }
 
 const transition = (state: TicTacToeState, action: TicTacToeAction): TicTacToeState => {
+    if (getWinner(state)) throw new Error(`Game already won`);
     const newState: TicTacToeState = {squares: [...state.squares], currPlayer: state.currPlayer};
     if (!!newState.squares[action.squareIndex]) throw new Error(`Square at index {${action.squareIndex}} already filled`);
     if (action.squareIndex < 0 || action.squareIndex > 8) throw new Error(`Invalid action index {${action.squareIndex}}`);

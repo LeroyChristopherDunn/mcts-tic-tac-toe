@@ -24,7 +24,8 @@ export function UCB(c = Math.sqrt(2)): SelectionScorer {
     return {
         score: node => {
             const delta = 0.01;
-            const exploitation = node.getTotalScore() / (node.getNumSimulations() + delta);
+            // multiplied by -1 because of minimax tree formulation - best action is one which minimizes opponent score
+            const exploitation = -1 * node.getTotalScore() / (node.getNumSimulations() + delta);
             const exploration = Math.sqrt(Math.log(node.parent.getNumSimulations()) / (node.getNumSimulations() + delta))
             return exploitation + c * exploration;
         }

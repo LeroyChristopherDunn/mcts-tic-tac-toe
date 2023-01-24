@@ -1,5 +1,6 @@
 import {Action, ExpansionPolicy, Model, Node, SelectionScorer, Simulator, TerminalCondition} from "./types";
 import {FixedIterations, RandomExpansionPolicy, UCB} from "./utils";
+import * as deepEqual from "deep-equal";
 
 // https://towardsdatascience.com/monte-carlo-tree-search-an-introduction-503d8c04e168
 
@@ -34,7 +35,8 @@ export class MonteCarloTreeSearch {
     }
 
     getBestAction(node: Node){
-        const score = (node: Node) => node.getTotalScore() / (node.getNumSimulations() + 0.01);
+        // best action is one which minimizes opponent score
+        const score = (node: Node) => -1 * node.getTotalScore() / (node.getNumSimulations() + 0.01);
         const bestNode = this.getHighestScoringNode(node.getChildren(), score);
         return bestNode?.prevAction;
     }
@@ -74,7 +76,7 @@ export class MonteCarloTreeSearch {
         if (availableActions.length === 0) return null;
         const exploredActions = node.getChildren().map(node => node.prevAction);
         const unexploredActions = availableActions
-            .filter(action => !exploredActions.includes(action));
+            .filter(action => !exploredActions.some(exploredAction => deepEqual(exploredAction, action)))
         if (unexploredActions.length === 0) return null;
         return this.actionPolicy.getAction(node.state, unexploredActions);
     }
@@ -82,6 +84,6 @@ export class MonteCarloTreeSearch {
     private backtrack(node: Node | null, score: number){
         if (!node) return;
         node.addSimulationScore(score);
-        this.backtrack(node.parent, -1 * score);
+        this.backtrack(node.parent, -1 * score); // min max formulation
     }
 }

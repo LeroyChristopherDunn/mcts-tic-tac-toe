@@ -20,7 +20,7 @@ export interface ExpansionPolicy {
 export type Transition = (state: State, action: Action) => State;
 
 export interface Simulator {
-    simulate: (state: State) => -1 | 0 | 1,
+    simulate: (state: State) => number, // -1 <= score <= 1
 }
 
 export type Model = {
@@ -34,6 +34,7 @@ export class Node {
     private children: Node[] = [];
     private totalScore = 0;
     private numSimulations = 0;
+    private avgScore = 0; // for debugging
 
     constructor(
         public readonly state: any,
@@ -52,6 +53,7 @@ export class Node {
     addSimulationScore(score: number){
         this.totalScore += score;
         this.numSimulations += 1;
+        this.avgScore = this.totalScore / (this.numSimulations + 0.01)
     }
 
     getTotalScore() {
