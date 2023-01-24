@@ -10,7 +10,7 @@ const readline = require('readline').createInterface({
 });
 
 export class TicTacToeMctsConsolePlayer{
-    constructor(private readonly seed = Math.round(Math.random())) {}
+    constructor(private readonly seed = Math.random()) {}
 
     async run() {
 
