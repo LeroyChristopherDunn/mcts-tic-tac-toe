@@ -20,6 +20,10 @@ describe('Tic Tac Toe Open Loop MCTS', () => {
             ],
             currPlayer: X,
         };
+
+        const action = getAction(initialState);
+
+        // expect(action.squareIndex).toBe(8);
     });
 
     it('given X winning position then X should win 1', async () => {
