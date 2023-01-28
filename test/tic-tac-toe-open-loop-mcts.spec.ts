@@ -1,13 +1,26 @@
-import {MonteCarloTreeSearch} from "../src/mcts/mcts";
-import {TicTacToeModel, TicTacToeState} from "../src/tic-tac-toe/tic-tac-toe";
-import {FixedIterations, RandomExpansionPolicy, UCB} from "../src/mcts/utils";
-import {TicTacToeRandomSimulator} from "../src/tic-tac-toe-mcts-runner";
+import {TicTacToeState} from "../src/tic-tac-toe/tic-tac-toe";
+import {FixedIterations} from "../src/mcts/utils";
+import {OpenLoopMonteCarloTreeSearch} from "../src/open-loop-mcts/open-loop-mcts";
+import {getActions, TicTacToeRandomOpenLoopSimulator} from "../src/tic-tac-toe-open-loop-mcts-runner";
+import {RandomExpansionPolicy, UCB} from "../src/open-loop-mcts/utils";
 
 const X = 'X';
 const O = 'O';
 const E = undefined;
 
-describe('Tic Tac Toe MCTS', () => {
+describe('Tic Tac Toe Open Loop MCTS', () => {
+
+    it('debug starting position', async () => {
+
+        const initialState: TicTacToeState = {
+            squares: [
+                E, E, E,
+                E, E, E,
+                E, E, E,
+            ],
+            currPlayer: X,
+        };
+    });
 
     it('given X winning position then X should win 1', async () => {
 
@@ -221,13 +234,12 @@ describe('Tic Tac Toe MCTS', () => {
 
 function getAction(initialState: TicTacToeState) {
     const seed = 0;
-    const mcts = new MonteCarloTreeSearch(
+    const mcts = new OpenLoopMonteCarloTreeSearch(
         {
             initialState: initialState,
-            getActions: TicTacToeModel.actions,
-            transition: TicTacToeModel.transition
+            getActions: getActions(seed),
         },
-        TicTacToeRandomSimulator(seed),
+        TicTacToeRandomOpenLoopSimulator(seed),
         FixedIterations(1000),
         UCB(),
         RandomExpansionPolicy(seed),

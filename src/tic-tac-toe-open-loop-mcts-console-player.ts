@@ -1,15 +1,16 @@
-import {TicTacToe, TicTacToeAction, TicTacToeModel, TicTacToeState} from "./tic-tac-toe/tic-tac-toe";
+import {TicTacToe, TicTacToeAction, TicTacToeState} from "./tic-tac-toe/tic-tac-toe";
 import * as Random from "random-seed";
-import {MonteCarloTreeSearch} from "./mcts/mcts";
-import {FixedIterations, RandomExpansionPolicy, UCB} from "./mcts/utils";
-import {TicTacToeRandomSimulator} from "./tic-tac-toe-mcts-runner";
+import {FixedIterations} from "./mcts/utils";
+import {OpenLoopMonteCarloTreeSearch} from "./open-loop-mcts/open-loop-mcts";
+import {getActions, TicTacToeRandomOpenLoopSimulator} from "./tic-tac-toe-open-loop-mcts-runner";
+import {RandomExpansionPolicy, UCB} from "./open-loop-mcts/utils";
 
 const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
-export class TicTacToeMctsConsolePlayer{
+export class TicTacToeOpenLoopMctsConsolePlayer{
     constructor(private readonly seed = Math.random()) {}
 
     async run() {
@@ -46,13 +47,12 @@ export class TicTacToeMctsConsolePlayer{
     }
 
     private getMctsPosition(state: TicTacToeState){
-        const mcts = new MonteCarloTreeSearch(
+        const mcts = new OpenLoopMonteCarloTreeSearch(
             {
                 initialState: state,
-                getActions: TicTacToeModel.actions,
-                transition: TicTacToeModel.transition
+                getActions: getActions(this.seed),
             },
-            TicTacToeRandomSimulator(this.seed),
+            TicTacToeRandomOpenLoopSimulator(this.seed),
             FixedIterations(100),
             UCB(),
             RandomExpansionPolicy(this.seed),
